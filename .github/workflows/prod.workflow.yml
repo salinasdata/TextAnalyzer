@@ -38,7 +38,7 @@ jobs:
     - name: Deploy to App Service
       uses: azure/webapps-deploy@v2
       with:
-        app-name: 'text-analyzer'
+        app-name: 'largetextanalyzer'
         images: 'largetextanalyzer.azurecr.io/largetextanalyzer:${{ github.sha }}'
         slot-name: 'production'
 
