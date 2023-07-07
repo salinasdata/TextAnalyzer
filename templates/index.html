@@ -21,16 +21,8 @@
         OpenAI API token limit which is currently at 4096 characters. For more information have a look at the demo's
         GitHub page: https://github.com/edgewaysai/TextAnalyzer
     </div>
-    <div class="text-xl text-slate-300 mt-2">
-        If you do not want to use your own OpenAI API key or you do not have one available, you can request one here:
-        <div class="text-xl text-slate-300 mt-2">
-            <a href="mailto:?subject=Request OpenAI key&body=Hi,I would like to request OpenAI key for https://{{context.host_url}}"
-              class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100
-              focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2
-              dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600
-              dark:focus:ring-gray-700" target="_blank">Request OpenAI API key</a>
-        </div>
-
+    <div class="text-l text-slate-300 mt-2 text-yellow-500">
+        <small>Depending on the size of the content it will take a while to generate the output</small>
     </div>
 
 </div>
@@ -44,8 +36,13 @@
             <textarea class="flex justify-center block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border
             border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600
             dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      type="text" id="github_repo_id" autocomplete="off" maxlength="10000"></textarea>
-            <label for="openai_key_id">Please provide the OpenAI API key</label>
+                      type="text" id="github_repo_id" autocomplete="off"></textarea>
+            <div>
+                <small class="flex mb-5 text-red-500">You can expand the text input field by dragging the lower right
+                    corner of the
+                    field</small>
+            </div>
+            <label for="openai_key_id" class="">Please provide the OpenAI API key</label>
             <input class="flex justify-center block p-2.5 w-full text-sm text-gray-900 bg-gray-50
             rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700
             dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500
@@ -54,7 +51,8 @@
             <button class="text-gray-900 bg-white border border-gray-300 focus:outline-none
             hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm
             px-5 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700
-            dark:hover:border-gray-600 dark:focus:ring-gray-700">Submit</button>
+            dark:hover:border-gray-600 dark:focus:ring-gray-700">Submit
+            </button>
         </form>
     </div>
 </div>
