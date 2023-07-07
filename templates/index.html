@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+
+<html lang="en" class="dark">
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>{{context.title}}</title>
+</head>
+
+<body class="dark:bg-gray-900">
+<div class="flex items-center py-2 px-3">
+    <h1 class="text-3xl text-slate-300">{{context.title}}</h1>
+</div>
+<div class="py-2 px-3">
+    <div class="text-xl text-slate-300 mt-2">
+        This demo enables you to quickly parse large text. By providing the large text input and
+        your OpenAI API key the content is being analyzed by ChatGPT and you will receive
+        a summary and an explanation of the entire content of the parsing large amount of text.
+    </div>
+    <div class="text-xl text-slate-300 mt-2">
+        Note, that the demo is programmed, so that it compiles all information from the content even if exceeds the
+        OpenAI API token limit which is currently at 4096 characters. For more information have a look at the demo's
+        GitHub page: https://github.com/edgewaysai/TextAnalyzer
+    </div>
+    <div class="text-xl text-slate-300 mt-2">
+        If you do not want to use your own OpenAI API key or you do not have one available, you can request one here:
+        <div class="text-xl text-slate-300 mt-2">
+            <a href="mailto:?subject=Request OpenAI key&body=Hi,I would like to request OpenAI key for https://{{context.host_url}}"
+              class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100
+              focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2
+              dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600
+              dark:focus:ring-gray-700" target="_blank">Request OpenAI API key</a>
+        </div>
+
+    </div>
+
+</div>
+<br/>
+<div class="flex items-center py-2 px-3">
+    <div class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300
+    focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400
+    dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <form id="message-form" action="" onsubmit="sendMessage(event)">
+            <label for="github_repo_id">Please provide large text to parse</label>
+            <textarea class="flex justify-center block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border
+            border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600
+            dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      type="text" id="github_repo_id" autocomplete="off" maxlength="10000"></textarea>
+            <label for="openai_key_id">Please provide the OpenAI API key</label>
+            <input class="flex justify-center block p-2.5 w-full text-sm text-gray-900 bg-gray-50
+            rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700
+            dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500
+            dark:focus:border-blue-500"
+                   type="text" id="openai_key_id" autocomplete="off"/>
+            <button class="text-gray-900 bg-white border border-gray-300 focus:outline-none
+            hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm
+            px-5 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700
+            dark:hover:border-gray-600 dark:focus:ring-gray-700">Submit</button>
+        </form>
+    </div>
+</div>
+
+<div class="flex items-center py-2 px-3">
+    <h2 class="text-2xl text-slate-400 overline decoration-4 decoration-pink-500">
+        {{context.log_file}}
+    </h2>
+</div>
+
+<div class="flex items-center py-2 px-3">
+    <div id="logs"
+         class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300
+         focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400
+         dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+    </div>
+</div>
+
+<script>
+    var ws_log = new WebSocket("wss://{{context.host_url}}/ws/");
+    var form = document.getElementById('message-form');
+    ws_log.onmessage = function (event) {
+        var logs = document.getElementById("logs");
+        var log_data = event.data;
+        logs.innerHTML += "<div>" + log_data + "</div>";
+    };
+
+    form.onsubmit = function (e) {
+        e.preventDefault();
+        var github_repo_id = document.getElementById("github_repo_id");
+        var openai_key_id = document.getElementById("openai_key_id");
+        var params = {
+            github_repo: github_repo_id.value,
+            openai_key: openai_key_id.value
+        }
+        console.log(JSON.stringify(params) )
+        ws_log.send(JSON.stringify(params));
+        logs.innerHTML = "";
+        return false;
+    };
+
+</script>
+</body>
+</html>
