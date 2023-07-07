@@ -1,0 +1,25 @@
+# Docker related
+Docker/
+**/*Dockerfile*
+**/.dockerignore
+
+/venv*
+/.env
+
+.DS_Store
+
+/.idea
+/.vscode
+__pycache__
+.~*.*
+*.*~
+*.egg-info
+*.log
+*.pot
+*.pyc
+*.py~
+**/.git
+
+**/.pytest_cache
+**/__pycache__
+code_analyzer.ipynb

@@ -1,0 +1,16 @@
+/.env
+/venv/
+# Mac OS files
+.DS_Store
+
+/.idea
+/.vscode
+__pycache__
+/env_*
+.~*.*
+*.*~
+*.egg-info
+*.log
+*.pot
+*.pyc
+*.py~
