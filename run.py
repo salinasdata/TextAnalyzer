@@ -14,7 +14,7 @@ templates = Jinja2Templates(directory=str(Path(BASE_DIR, 'templates')))
 log_file = "Your Results"
 
 port = os.environ.get("PORT") or 8000
-host_url = os.environ.get("HOST") or "code-analyzer.azurewebsites.net"
+host_url = os.environ.get("HOST") or "largetextanalyzer.azurewebsites.net"
 
 app = FastAPI(title='Text Analyzer Demo')
 
