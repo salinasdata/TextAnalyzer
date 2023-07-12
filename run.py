@@ -1,3 +1,4 @@
+import asyncio
 import os
 from pathlib import Path
 
@@ -52,18 +53,23 @@ async def websocket_endpoint(websocket: WebSocket):
                 await websocket.send_text(
                     "Details saved. Please do not reload the page!"
                 )
+                await asyncio.sleep(0.01)
                 await websocket.send_text("Set OpenAI secret key!")
+                await asyncio.sleep(0.01)
                 openai.api_key = openai_key
                 os.environ['OPENAI_API_KEY'] = openai_key
 
                 await websocket.send_text("Analyzing...")
+                await asyncio.sleep(0.01)
                 await websocket.send_text("Fetching files from public repository...")
-
+                await asyncio.sleep(0.01)
                 files, owner, repo_name = await Analyzer.aget_files_from_dir(
                     input, websocket
                 )
                 await websocket.send_text("Files are fetched!")
+                await asyncio.sleep(0.01)
                 await websocket.send_text("Iterating over fetched files...")
+                await asyncio.sleep(0.01)
                 if files and owner and repo_name:
                     files = await Analyzer.aread_files(file_paths=files,
                                                        owner=owner,
@@ -74,19 +80,36 @@ async def websocket_endpoint(websocket: WebSocket):
                         await code_analyzer.aanalyze_file(websocket)
 
                     await websocket.send_text("All files processed!")
+                    await asyncio.sleep(0.01)
                 else:
                     await websocket.send_text("Something happen with the API")
+                    await asyncio.sleep(0.01)
             elif not is_url and is_openai_key:
+                await websocket.send_text(
+                    "Details saved. Please do not reload the page!"
+                )
+                await asyncio.sleep(0.01)
+                await websocket.send_text("Set OpenAI secret key!")
+                await asyncio.sleep(0.01)
+                openai.api_key = openai_key
+                os.environ['OPENAI_API_KEY'] = openai_key
+
+                await websocket.send_text("Analyzing...")
+                await asyncio.sleep(0.01)
                 code_analyzer = Analyzer(input)
                 await code_analyzer.aanalyze_file(websocket, is_github=False)
+                await asyncio.sleep(0.01)
             else:
                 await websocket.send_text("Please check provided details")
+                await asyncio.sleep(0.01)
 
             await websocket.send_text('Analyzing completed.')
+            await asyncio.sleep(0.01)
 
     except WebSocketDisconnect as e:
         print('error:', e)
         await websocket.send_text(f'error:{e}')
+        await asyncio.sleep(0.01)
 
 
 if __name__ == "__main__":

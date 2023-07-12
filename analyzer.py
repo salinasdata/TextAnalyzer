@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import glob
 from datetime import datetime
@@ -16,32 +17,27 @@ from configs import Config
 
 
 class Analyzer:
-    main_prompt = """
-    Firstly, give the following text an informative title. 
-    Then, on a new line, write a 75-100 word summary of the following text:
-    {text}
-    Return your answer in the following format:
-    Title | Summary...
-    e.g. 
-    Why Artificial Intelligence is Good | AI can make humans more productive by 
-    automating many repetitive processes.
-    TITLE AND CONCISE SUMMARY:
-    """
+    main_prompt = """Write an informative title that summarizes each of the following groups of titles. Make sure that the titles capture as much information as possible, 
+  and are different from each other:
+  {text}
+  
+  Return your answer in a numbered list, with new line separating each title: 
+  1. Title 1
+  2. Title 2
+  3. Title 3
 
-    summarize_prompt = """Write a detailed summary on the structure of the provided 
-       content which contains code from selected files from a Github repository, which 
-       deploys a chatbot system in Microsoft Azure. Please list all necessary details 
-       which can be extrapolated later to specific guidelines how to reverse engineer 
-       the repository. I am specifically looking for answers on: 
-       i. the specific steps to deploy this resource? Please list all the files that 
-       contain the specific tasks that automate the deployment!
-       ii. relevant files and code sections that I need to alter in case I want to 
-       adjust the overall tool of the repository for my use case. Please list all 
-       files and name the code sections.
-       iii. the detailed steps that need to be performed in order to adjust this 
-       repository as a project template for customized deployments.: 
-       {text}
-       """
+  TITLES:
+  """
+
+    summarize_prompt = """Firstly, give the following text an informative title. Then, on a new line, write a 75-100 word summary of the following text:
+  {text}
+
+  Return your answer in the following format:
+  Title | Summary...
+  e.g. 
+  Why Artificial Intelligence is Good | AI can make humans more productive by automating many repetitive processes.
+
+  TITLE AND CONCISE SUMMARY:"""
 
     config = Config()
 
@@ -124,10 +120,12 @@ class Analyzer:
                     else:
                         message = "Repository tree is empty"
                         await websocket.send_text(message)
+                        await asyncio.sleep(0.01)
                         print(message)
                 else:
                     message = f"Repository cannot bee accessed {github_repo}"
                     await websocket.send_text(message)
+                    await asyncio.sleep(0.01)
                     print(message)
 
         return files_list, owner, repo_name
@@ -479,3 +477,4 @@ class Analyzer:
     async def logger(self, message, websocket: WebSocket):
         print(message)
         await websocket.send_text(message)
+        await asyncio.sleep(0.01)
