@@ -119,5 +119,5 @@ if __name__ == "__main__":
         port=port,
         log_level="info",
         reload=True,
-        workers=1,
+        workers=4,
     )
