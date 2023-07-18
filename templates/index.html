@@ -98,7 +98,6 @@
             github_repo: github_repo_id.value,
             openai_key: openai_key_id.value
         }
-        console.log(JSON.stringify(params) )
         ws_log.send(JSON.stringify(params));
         logs.innerHTML = "";
         return false;
