@@ -1,6 +1,7 @@
 import asyncio
 import base64
 import glob
+import re
 from datetime import datetime
 from typing import Optional
 
@@ -28,7 +29,7 @@ class Analyzer:
     main_prompt = """Write an informative title that summarizes each of the following groups of titles. Make sure that the titles capture as much information as possible, 
   and are different from each other:
   {text}
-  
+
   Return your answer in a numbered list, with new line separating each title: 
   1. Title 1
   2. Title 2
@@ -219,8 +220,8 @@ class Analyzer:
 
             # If exceed MAX_WORDS, then stop at the end of the segment
             # Only consider it a sentence if the length is at least MIN_WORDS
-            if (sentence_length >= MIN_WORDS and segments[i][
-                -1] == '.') or sentence_length >= MAX_WORDS:
+            if (sentence_length >= MIN_WORDS and segments[i][-1] == '.') or \
+                    sentence_length >= MAX_WORDS:
                 sentence = ' '.join(sentence_segments)
                 sentences.append({
                     'sentence_num': sentence_num,
@@ -241,6 +242,7 @@ class Analyzer:
         Function to break a large text into chunks
         """
 
+        text = text.replace("\n", " ")
         segments = text.split('.')
         segments = [segment + '.' for segment in segments]
         # Further split by comma
@@ -249,7 +251,6 @@ class Analyzer:
         segments = [item for sublist in segments for item in sublist]
         sentences = await Analyzer.acreate_sentences(segments, MIN_WORDS=20,
                                                      MAX_WORDS=80)
-        # words_per_chunk = len(words) // num_chunks
         CHUNK_LENGTH = 5
         STRIDE = 1
         chunks_list = []
@@ -536,17 +537,6 @@ class Analyzer:
     @staticmethod
     async def asummarize_stage_2(stage_1_outputs, topics, summary_num_words=250):
         print(f'Stage 2 start time {datetime.now()}')
-        title_prompt_template = """Write an informative title that summarizes each of the following groups of titles. Make sure that the titles capture as much information as possible, 
-          and are different from each other:
-          {text}
-
-          Return your answer in a numbered list, with new line separating each title: 
-          1. Title 1
-          2. Title 2
-          3. Title 3
-
-          TITLES:
-          """
 
         map_prompt_template = """Write a 75-100 word summary of the following text:
         {text}
@@ -556,8 +546,7 @@ class Analyzer:
         combine_prompt_template = 'Write a ' + str(summary_num_words) + """-word summary of the following, removing irrelevant information. Finish your answer:
       {text}
       """ + str(summary_num_words) + """-WORD SUMMARY:"""
-        title_prompt = PromptTemplate(template=title_prompt_template,
-                                      input_variables=["text"])
+
         map_prompt = PromptTemplate(template=map_prompt_template,
                                     input_variables=["text"])
         combine_prompt = PromptTemplate(template=combine_prompt_template,
@@ -567,31 +556,12 @@ class Analyzer:
         for c in topics:
             topic_data = {
                 'summaries': [stage_1_outputs[chunk_id]['summary'] for chunk_id in c],
-                'titles': [stage_1_outputs[chunk_id]['title'] for chunk_id in c]
             }
             topic_data['summaries_concat'] = ' '.join(topic_data['summaries'])
-            topic_data['titles_concat'] = ', '.join(topic_data['titles'])
             topics_data.append(topic_data)
 
         # Get a list of each community's summaries (concatenated)
         topics_summary_concat = [c['summaries_concat'] for c in topics_data]
-        topics_titles_concat = [c['titles_concat'] for c in topics_data]
-
-        topics_titles_concat_all = ''''''
-        for i, c in enumerate(topics_titles_concat):
-            topics_titles_concat_all += f'''{i + 1}. {c}
-           '''
-        title_llm = OpenAI(temperature=0, model_name='text-davinci-003')
-        title_llm_chain = LLMChain(llm=title_llm, prompt=title_prompt)
-        title_llm_chain_input = [{'text': topics_titles_concat_all}]
-        title_llm_chain_results = title_llm_chain.apply(title_llm_chain_input)
-
-        # Split by new line
-        titles = title_llm_chain_results[0]['text'].split('\n')
-        # Remove any empty titles
-        titles = [t for t in titles if t != '']
-        # Remove spaces at start or end of each title
-        titles = [t.strip() for t in titles]
 
         map_llm = OpenAI(temperature=0, model_name='text-davinci-003')
         reduce_llm = OpenAI(temperature=0, model_name='text-davinci-003', max_tokens=-1)
@@ -604,13 +574,10 @@ class Analyzer:
                                      llm=map_llm, reduce_llm=reduce_llm)
 
         output = chain({"input_documents": docs}, return_only_outputs=True)
-        summaries = output['intermediate_steps']
-        stage_2_outputs = [{'title': t, 'summary': s} for t, s in
-                           zip(titles, summaries)]
+
         final_summary = output['output_text']
 
         out = {
-            'stage_2_outputs': stage_2_outputs,
             'final_summary': final_summary
         }
         print(f'Stage 2 done time {datetime.now()}')
@@ -649,7 +616,8 @@ class Analyzer:
 
         print(f'Summary for {self.file}:\n{stage_summary}\n')
 
-    async def aanalyze_file(self, websocket: WebSocket, is_github: bool = True) -> None:
+    async def aanalyze_file(self, websocket: WebSocket,
+                            is_github: bool = True) -> Optional[str]:
         if is_github:
             await self.logger(f'Processing {self.file}...', websocket)
             await self.logger(f"Get chunks from {self.file}...", websocket)
@@ -693,16 +661,12 @@ class Analyzer:
 
         out = await Analyzer.asummarize_stage_2(stage_1_outputs, topics,
                                                 summary_num_words=250)
-        stage_2_outputs = out['stage_2_outputs']
         final_summary = out['final_summary']
         if is_github:
             await self.logger(f'Summary for {self.file}:\n{final_summary}\n', websocket)
+            return final_summary
         else:
-            await self.logger(f'Outputs for stage 2 summary:', websocket)
-            for stage_2_output in stage_2_outputs:
-                await self.logger(f'\n{stage_2_output}\n', websocket)
-            await self.logger(f'Summary for input text:', websocket)
-            await self.logger(f'\n{final_summary}\n', websocket)
+            await self.logger(f'Summary for input text:\n{final_summary}\n', websocket)
 
     async def logger(self, message, websocket: WebSocket):
         print(message)
