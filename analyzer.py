@@ -242,8 +242,8 @@ class Analyzer:
         Function to break a large text into chunks
         """
 
-        text = text.replace("\n", " ")
-        segments = text.split('.')
+        new_text = re.sub(r"[^a-zA-Z0-9 .,:-;'\"]", " ", text)
+        segments = new_text.split('.')
         segments = [segment + '.' for segment in segments]
         # Further split by comma
         segments = [segment.split(',') for segment in segments]
